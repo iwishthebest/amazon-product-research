@@ -65,5 +65,9 @@ def test_render_html_contains_seller_dashboard_fields(tmp_path):
     assert "新品榜热度信号（非销量确认）" in html
     assert "机会评分" in html
     assert "重点候选" in html
+    assert "竞品对比" in html
+    assert "卡片视图" in html
+    assert "对比表" in html
+    assert "sortTable" in html
     assert "改进方向" in html
     assert "评论壁垒较低" in html
