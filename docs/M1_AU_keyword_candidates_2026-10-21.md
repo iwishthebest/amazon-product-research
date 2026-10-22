@@ -29,4 +29,3 @@
 ## 下一步
 
 将本清单交给客户确认，形成带有 `source=title_derived`、`status=candidate` 的关键词配置；确认后再进入 US/AU 关键词字段冻结和 M2 样本验证。
-
