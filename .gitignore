@@ -5,3 +5,6 @@ __pycache__/
 .tmp/
 data/
 config.json
+.env
+frontend/node_modules/
+frontend/.next/
