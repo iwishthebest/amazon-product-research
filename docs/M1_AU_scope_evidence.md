@@ -10,6 +10,18 @@
 - 历史对照：`data/reports/categories_2026-10-20.json`
 - 本地数据库：`data/amazon_release.sqlite3`
 
+`data` 目录当前的非图片数据文件为：
+
+- `data/reports/categories_2026-10-20.json`
+- `data/reports/categories_2026-10-21.json`
+- `data/reports/snapshot_2026-10-20.json`
+- `data/reports/snapshot_2026-10-21.json`
+- `data/reports/new_products_2026-10-20.csv`
+- `data/reports/new_products_2026-10-21.csv`
+- `data/reports/release_2026-10-20.html`
+- `data/reports/release_2026-10-21.html`
+- `data/amazon_release.sqlite3`
+
 ## 已确认的 AU 范围
 
 | 项目 | 值 | 证据 |
@@ -32,6 +44,14 @@
 ## 关键词结论
 
 在项目代码、`data` 目录和现有 Markdown 文档中，没有发现独立的关键词种子文档或 `keyword/关键词` 配置。当前可确认的是类目节点和商品标题；不能把标题词频自动写成客户确认的关键词种子。
+
+对 `data` 的精确字段核对结果：
+
+- 类目 JSON 字段：`name`、`node_id`、`parent_node_id`、`url`、`depth`；
+- 商品 JSON 字段：`asin`、`category_name`、`category_node_id`、`rank`、`title`、`price`、`rating`、`review_count`、`observed_at` 等；
+- CSV 字段：与商品快照一致，并增加 `first_seen_at`；
+- SQLite 表只有 `products` 和 `observations` 两个业务表，没有关键词表或搜索词字段；
+- 精确搜索 `keyword`、`关键词`、`search_term`、`search term` 没有命中 `data` 中的非图片文件。
 
 因此 M1 暂记为：
 
