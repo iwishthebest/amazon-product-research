@@ -1,0 +1,1 @@
+"""AmazonRelease MVP backend package."""

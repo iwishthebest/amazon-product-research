@@ -1,4 +1,24 @@
-# Amazon AU New Releases Collector
+# AmazonRelease MVP
+
+当前主线已切换为计划中的 US/AU 竞品选品 Web MVP。新的实现位于 `backend/`、`frontend/`、`backend/migrations/` 和 `docker-compose.yml`；根目录原有 `amazon_release/` Python 新品榜采集器仅保留作历史参考，不再作为新计划的架构约束。
+
+## 新主线快速启动
+
+1. 复制 `.env.example` 为 `.env`，设置 `POSTGRES_PASSWORD`。
+2. 执行 `docker compose up --build`。
+3. 浏览器打开 `http://localhost:3000`，API 文档位于 `http://localhost:8000/docs`。
+
+当前页面只展示站点配置和空数据状态；真实商品与销量必须先完成 [`docs/data-source-validation.md`](docs/data-source-validation.md) 中的授权、样本和人工核验。
+
+实施状态、字段约束和验收清单见：
+
+- [`docs/mvp-requirements.md`](docs/mvp-requirements.md)
+- [`docs/data-dictionary.md`](docs/data-dictionary.md)
+- [`docs/acceptance.md`](docs/acceptance.md)
+
+---
+
+## 历史参考：Amazon AU New Releases Collector
 
 这是一个面向 Amazon 澳洲站的 Python MVP，用于每日采集 `Pilates` 和 `Yoga` 新品榜页面，并输出首次发现的 ASIN。
 
