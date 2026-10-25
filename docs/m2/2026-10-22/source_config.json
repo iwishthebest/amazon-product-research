@@ -1,5 +1,16 @@
 {
+  "amazon_public_page": {
+    "status": "checked",
+    "domains": {
+      "US": "amazon.com",
+      "AU": "amazon.com.au"
+    }
+  },
   "inputs": {
+    "keyword_config": {
+      "path": "C:\\Users\\nozdi\\Documents\\ChatGPT\\AmazonRelease\\data\\keyword_config_au.json",
+      "status": "confirmed"
+    },
     "categories": {
       "path": "C:\\Users\\nozdi\\Documents\\ChatGPT\\AmazonRelease\\data\\reports\\categories_2026-10-21.json",
       "role": "category_nodes_and_keyword_candidates",
@@ -10,27 +21,18 @@
       "role": "historical_asin_candidates"
     }
   },
-  "amazon_public_page": {
-    "status": "checked",
-    "domains": {
-      "US": "amazon.com",
-      "AU": "amazon.com.au"
-    }
-  },
   "keepa": {
     "status": "skipped_by_project_decision",
     "in_m2_decision": false
   },
   "sp_api": {
-    "status": "endpoint_reachable_but_auth_not_verified",
+    "status": "pending_seller_authorization",
     "endpoint_regions": {
       "US": "na",
       "AU": "fe"
-    },
-    "unauthenticated_head_probe": {
-      "sellingpartnerapi-na.amazon.com": 403,
-      "sellingpartnerapi-fe.amazon.com": 403
     }
   },
-  "endpoint_probe_note": "403 confirms an endpoint response without credentials; it is not an authorization or data-field validation."
+  "asin_sample": {
+    "source": "snapshot"
+  }
 }
