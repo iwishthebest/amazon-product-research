@@ -11,12 +11,12 @@ from urllib.parse import urlparse
 import requests
 
 
-_HIRES_RE = re.compile(r"[\"']hiRes[\"']\s*:\s*[\"'](https?://[^\"']+)[\"']", re.I)
+_IMAGE_RE = re.compile(r"[\"'](?:hiRes|large)[\"']\s*:\s*[\"'](https?://[^\"']+)[\"']", re.I)
 
 
 def extract_primary_image_url(page_html: str) -> str | None:
-    """Extract the first real product hiRes image from Amazon's colorImages JSON."""
-    for match in _HIRES_RE.finditer(page_html):
+    """Extract the first real product image from Amazon's colorImages JSON."""
+    for match in _IMAGE_RE.finditer(page_html):
         candidate = html_lib.unescape(match.group(1)).replace("\\/", "/")
         parsed = urlparse(candidate)
         if parsed.netloc.lower().endswith("media-amazon.com") and "/images/I/" in parsed.path:
