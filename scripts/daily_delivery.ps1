@@ -20,6 +20,9 @@ if (!(Test-Path $html)) { throw "HTML 报告生成失败：$html" }
 pytest -q tests/test_report.py tests/test_cli.py tests/test_m2_validation.py
 # data/ is ignored for local runtime artifacts; force-add only the three customer deliverables.
 git add -f -- $snapshot $newProducts $html
+if (Test-Path (Join-Path $output "images")) {
+    git add -f -- (Join-Path $output "images")
+}
 git diff --cached --check
 if (git diff --cached --quiet) {
     Write-Host "当天报告没有新增 Git 变更：$date"
