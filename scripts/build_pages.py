@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import re
+import shutil
 from pathlib import Path
 
 
@@ -16,6 +17,9 @@ def build(source: Path, destination: Path) -> None:
     )
     for date, path in reports:
         (destination / path.name).write_bytes(path.read_bytes())
+    image_source = source / "images"
+    if image_source.exists():
+        shutil.copytree(image_source, destination / "images", dirs_exist_ok=True)
     links = "\n".join(
         f'<li><a href="{html.escape(path.name)}">{html.escape(date)} 每日竞品分析报告</a></li>'
         for date, path in reports
