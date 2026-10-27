@@ -5,7 +5,7 @@
 ## 已冻结边界
 
 - 目标平台：Amazon；站点：US 与 AU；部署在客户自己的服务器。
-- 访问端：Mac 上的 Safari/Chrome，桌面优先，最低按 1440×900 设计，并兼容 1280×800。
+- 访问端：通过 Safari/Chrome 等浏览器访问，交付物为响应式 Web 页面，覆盖桌面、平板和移动端。
 - MVP 闭环：发现商品 → 查看竞品 → 情景利润 → 规则评分/筛选 → CSV/XLSX 导出。
 - API 密钥只保存在服务器端；浏览器不直连 Keepa 或 SP-API。
 - 销量必须标注为 `actual`、`estimated`、`proxy` 或 `unavailable`，估算和代理指标不得显示成真实销量。
