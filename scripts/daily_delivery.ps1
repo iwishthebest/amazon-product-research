@@ -1,5 +1,8 @@
 param(
     [string]$Repo = (Split-Path -Parent $PSScriptRoot),
+    [string]$Config = "config.example.json",
+    [string]$OutputSubdir = "",
+    [string]$Db = "data/amazon_release.sqlite3",
     [switch]$SkipPush
 )
 
@@ -7,12 +10,13 @@ $ErrorActionPreference = "Stop"
 Set-Location $Repo
 $env:PYTHONPATH = $Repo
 $date = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId((Get-Date), "China Standard Time").ToString("yyyy-MM-dd")
-$output = Join-Path $Repo "data\reports"
+$output = Join-Path $Repo (Join-Path "data\reports" $OutputSubdir)
+$dbPath = Join-Path $Repo $Db
 $snapshot = Join-Path $output "snapshot_$date.json"
 $newProducts = Join-Path $output "new_products_$date.csv"
 $html = Join-Path $output "release_$date.html"
 
-python run_amazon_release.py --config config.example.json --timezone Asia/Shanghai --output-dir data/reports
+python run_amazon_release.py --config $Config --timezone Asia/Shanghai --output-dir $output --db $dbPath
 if (!(Test-Path $snapshot) -or !(Test-Path $newProducts)) { throw "采集未生成当天 JSON/CSV：$date" }
 python render_release_report.py --snapshot $snapshot --new-products $newProducts --date $date --output $html
 if (!(Test-Path $html)) { throw "HTML 报告生成失败：$html" }
