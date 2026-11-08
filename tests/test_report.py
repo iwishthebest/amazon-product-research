@@ -142,7 +142,7 @@ def test_render_combined_html_supports_zoom_links_collapsed_rows_and_empty_categ
     assert "今日无新发布商品" in html
 
 
-def test_render_combined_html_places_group_toggle_in_last_column(tmp_path):
+def test_render_combined_html_places_group_toggle_in_last_row(tmp_path):
     output = tmp_path / "combined.html"
     render_combined_html({
         "au": [{
@@ -154,5 +154,5 @@ def test_render_combined_html_places_group_toggle_in_last_column(tmp_path):
     }, output, report_date="2026-10-20")
 
     html = output.read_text(encoding="utf-8")
-    assert '<th colspan="8" class="group-label">' in html
-    assert '<th class="group-control"><button class="group-toggle"' in html
+    assert '<th colspan="9" class="group-label">' in html
+    assert '<tr class="group-footer" data-group="group-1"><td colspan="9"><button class="group-toggle"' in html
