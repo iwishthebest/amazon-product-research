@@ -110,3 +110,33 @@ def test_render_combined_html_restarts_row_numbers_for_each_category(tmp_path):
 
     html = output.read_text(encoding="utf-8")
     assert html.count('<td class="row-number">1</td>') == 2
+
+
+def test_render_combined_html_supports_zoom_links_collapsed_rows_and_empty_categories(tmp_path):
+    output = tmp_path / "combined.html"
+    products = [
+        {
+            "asin": f"B0ABC123{i:02d}",
+            "title": f"Pilates Ring {i}",
+            "category_name": "Pilates",
+            "image_url": f"images/B0ABC123{i:02d}.jpg",
+            "product_url": f"https://www.amazon.com.au/dp/B0ABC123{i:02d}",
+        }
+        for i in range(12)
+    ]
+    products.append({
+        "asin": "B0EMPTY123",
+        "title": "Yoga Mat",
+        "category_name": "Yoga",
+        "image_url": "images/B0EMPTY123.jpg",
+        "product_url": "https://www.amazon.com.au/dp/B0EMPTY123",
+    })
+    render_combined_html({"au": products}, output, report_date="2026-10-20", site_new_asins={"au": {"B0ABC12300"}})
+
+    html = output.read_text(encoding="utf-8")
+    assert "image-preview-trigger" in html
+    assert "image-preview-popover" in html
+    assert 'class="product-details" href="https://www.amazon.com.au/dp/B0ABC12300"' in html
+    assert html.count('class="product-row collapsed"') == 2
+    assert "group-toggle" in html
+    assert "今日无新发布商品" in html

@@ -300,13 +300,35 @@ def render_combined_html(
     categories = sorted({str(item["category_name"]) for item in all_views})
     rows = []
     row_number = 0
+    group_number = 0
+    group_has_new = {
+        (str(item["site"]), str(item["category_name"])): any(
+            bool(other["is_new"])
+            for other in all_views
+            if str(other["site"]) == str(item["site"])
+            and str(other["category_name"]) == str(item["category_name"])
+        )
+        for item in all_views
+    }
     ordered_views = sorted(all_views, key=lambda x: (str(x["site"]), str(x["category_name"]), -int(x["score"]), x["rank"] is None, x["rank"] or 999999))
     previous_group = None
+    current_group_id = ""
     for item in ordered_views:
         site = str(item["site"])
         group = (site, str(item["category_name"]))
         if group != previous_group:
-            rows.append(f'<tr class="group-row" data-category="{html.escape(str(item["category_name"]), quote=True)}"><th colspan="9">{site_labels.get(site, site.upper())} · {html.escape(str(item["category_name"]))}</th></tr>')
+            group_number += 1
+            current_group_id = f"group-{group_number}"
+            toggle_label = "展开全部"
+            rows.append(
+                f'<tr class="group-row" data-group="{current_group_id}" data-category="{html.escape(str(item["category_name"]), quote=True)}">'
+                f'<th colspan="9"><span>{site_labels.get(site, site.upper())} · {html.escape(str(item["category_name"]))}</span>'
+                f'<button class="group-toggle" type="button" data-group="{current_group_id}">{toggle_label}</button></th></tr>'
+            )
+            if not group_has_new[group]:
+                rows.append(
+                    f'<tr class="empty-row" data-group="{current_group_id}"><td colspan="9">今日无新发布商品</td></tr>'
+                )
             previous_group = group
             row_number = 0
         row_number += 1
@@ -317,9 +339,12 @@ def render_combined_html(
         detail_title = full_title if compact_title == full_title else full_title
         price = f'{item["currency"] or "--"} {item["price"]}' if item["price"] else "--"
         badge = '<em>首次发现</em>' if item["is_new"] else ''
+        collapsed = " collapsed" if row_number > 10 else ""
+        product_url = html.escape(str(item["product_url"]), quote=True)
+        image_url = html.escape(str(item["image_url"]), quote=True)
         rows.append(
-            f'<tr data-site="{site}" data-search="{html.escape(str(item["title"])+" "+str(item["asin"]), quote=True)}">'
-            f'<td class="row-number">{row_number}</td><td class="product-cell"><img loading="lazy" src="{html.escape(str(item["image_url"]), quote=True)}" alt="{html.escape(str(item["title"]), quote=True)}" onerror="this.classList.add(\'image-missing\')"><div><strong>{html.escape(compact_title)}</strong><small>{html.escape(detail_title)}</small><small>{html.escape(str(item["asin"]))}</small></div></td>'
+            f'<tr class="product-row{collapsed}" data-product="true" data-group="{current_group_id}" data-site="{site}" data-search="{html.escape(str(item["title"])+" "+str(item["asin"]), quote=True)}">'
+            f'<td class="row-number">{row_number}</td><td class="product-cell"><button class="image-preview-trigger" type="button" data-image="{image_url}" aria-label="预览商品图片"><img loading="lazy" src="{image_url}" alt="{html.escape(str(item["title"]), quote=True)}" onerror="this.classList.add(\'image-missing\')"></button><a class="product-details" href="{product_url}" target="_blank" rel="noreferrer"><strong>{html.escape(compact_title)}</strong><small>{html.escape(detail_title)}</small><small>{html.escape(str(item["asin"]))}</small></a></td>'
             f'<td><span class="site {site}">{site_labels.get(site, site.upper())}</span></td>'
             f'<td>{html.escape(str(item["category_name"]))}</td><td>{html.escape(str(item["rank_signal"]))}</td>'
             f'<td>{html.escape(price)}</td><td>{html.escape(str(item["rating_signal"]))}</td>'
@@ -331,14 +356,23 @@ def render_combined_html(
     document = f'''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Amazon 美国站与澳洲站新品日报 · {html.escape(report_date)}</title>
 <style>
-:root{{--ink:#17202a;--muted:#667085;--line:#e5e7eb;--bg:#f6f8fb;--blue:#155e75}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Segoe UI,"Microsoft YaHei",sans-serif}}header{{padding:24px 5vw;background:linear-gradient(120deg,#17202a,#155e75);color:#fff}}header h1{{margin:0 0 4px;font-size:clamp(22px,3vw,34px)}}header p{{margin:0;opacity:.82}}main{{width:min(1500px,92vw);margin:18px auto 48px}}.notice{{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 14px;margin-bottom:14px}}.summary{{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}}.metric{{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 15px;min-width:130px}}.metric b{{display:block;color:var(--blue);font-size:23px}}.metric span{{color:var(--muted);font-size:12px}}.toolbar{{display:flex;gap:9px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:14px;position:sticky;top:0;z-index:2}}input,select{{padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}}input{{min-width:260px;flex:1}}.table-wrap{{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:auto}}table{{border-collapse:collapse;width:100%;min-width:980px}}th,td{{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}}th{{color:var(--muted);font-size:12px;white-space:nowrap}}.group-row th{{padding:12px 10px 7px;background:#f1f5f9;color:var(--blue);font-size:13px;border-top:8px solid var(--bg)}}td strong,td small{{display:block}}td small{{color:var(--muted);font-size:11px;margin-top:2px}}.row-number{{width:42px;color:var(--muted);font-variant-numeric:tabular-nums}}.product-cell{{display:flex;align-items:center;gap:8px;min-width:300px}}.product-cell img{{width:96px;height:96px;object-fit:contain;border:1px solid var(--line);border-radius:9px;background:#fff;flex:0 0 96px}}.product-cell img.image-missing{{visibility:hidden}}.site{{display:inline-block;padding:3px 7px;border-radius:999px;font-size:12px;font-weight:600}}.site.us{{background:#dbeafe;color:#1d4ed8}}.site.au{{background:#dcfce7;color:#166534}}.score{{color:#0f766e}}em{{font-style:normal;color:#b45309;font-size:11px;margin-right:7px}}a{{color:#b45309;text-decoration:none;white-space:nowrap}}a:hover{{text-decoration:underline}}.hidden{{display:none!important}}footer{{color:var(--muted);margin-top:13px;font-size:12px}}#top{{position:fixed;right:20px;bottom:20px;border:0;border-radius:999px;background:var(--blue);color:white;width:42px;height:42px;cursor:pointer;box-shadow:0 4px 12px #17202a33}}
+:root{{--ink:#17202a;--muted:#667085;--line:#e5e7eb;--bg:#f6f8fb;--blue:#155e75}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Segoe UI,"Microsoft YaHei",sans-serif}}header{{padding:24px 5vw;background:linear-gradient(120deg,#17202a,#155e75);color:#fff}}header h1{{margin:0 0 4px;font-size:clamp(22px,3vw,34px)}}header p{{margin:0;opacity:.82}}main{{width:min(1500px,92vw);margin:18px auto 48px}}.notice{{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 14px;margin-bottom:14px}}.summary{{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}}.metric{{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 15px;min-width:130px}}.metric b{{display:block;color:var(--blue);font-size:23px}}.metric span{{color:var(--muted);font-size:12px}}.toolbar{{display:flex;gap:9px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:14px;position:sticky;top:0;z-index:2}}input,select{{padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}}input{{min-width:260px;flex:1}}.table-wrap{{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:auto}}table{{border-collapse:collapse;width:100%;min-width:980px}}th,td{{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}}th{{color:var(--muted);font-size:12px;white-space:nowrap}}.group-row th{{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 10px 7px;background:#f1f5f9;color:var(--blue);font-size:13px;border-top:8px solid var(--bg)}}.group-row th span{{font-weight:600}}.group-toggle{{border:1px solid #cbd5e1;border-radius:999px;padding:4px 10px;background:#fff;color:var(--blue);cursor:pointer;font-size:12px;white-space:nowrap}}.group-toggle:hover{{background:#e0f2fe}}.empty-row td{{padding:12px 10px;color:var(--muted);text-align:center;background:#fafafa;font-style:italic}}td strong,td small{{display:block}}td small{{color:var(--muted);font-size:11px;margin-top:2px}}.row-number{{width:42px;color:var(--muted);font-variant-numeric:tabular-nums}}.product-cell{{display:flex;align-items:center;gap:8px;min-width:300px;position:relative}}.image-preview-trigger{{border:0;padding:0;background:transparent;cursor:zoom-in;flex:0 0 96px}}.product-cell img{{width:96px;height:96px;object-fit:contain;border:1px solid var(--line);border-radius:9px;background:#fff;display:block}}.product-cell img.image-missing{{visibility:hidden}}.product-details{{display:block;min-width:0;color:var(--ink);text-decoration:none;white-space:normal}}.product-details:hover{{color:var(--blue);text-decoration:underline}}.collapsed{{display:none!important}}.image-preview-popover{{position:fixed;display:none;z-index:20;width:340px;height:340px;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 12px 35px #17202a33;pointer-events:none}}.image-preview-popover.show{{display:grid;place-items:center}}.image-preview-popover img{{max-width:100%;max-height:100%;object-fit:contain}}.site{{display:inline-block;padding:3px 7px;border-radius:999px;font-size:12px;font-weight:600}}.site.us{{background:#dbeafe;color:#1d4ed8}}.site.au{{background:#dcfce7;color:#166534}}.score{{color:#0f766e}}em{{font-style:normal;color:#b45309;font-size:11px;margin-right:7px}}a{{color:#b45309;text-decoration:none;white-space:nowrap}}a:hover{{text-decoration:underline}}.hidden{{display:none!important}}footer{{color:var(--muted);margin-top:13px;font-size:12px}}#top{{position:fixed;right:20px;bottom:20px;border:0;border-radius:999px;background:var(--blue);color:white;width:42px;height:42px;cursor:pointer;box-shadow:0 4px 12px #17202a33}}
 </style><body><header><h1>Amazon 美国站与澳洲站新品日报</h1><p>双站点合并视图 · Pilates / Yoga · 报告日期：{html.escape(report_date)}</p></header><main>
 
 <section class="summary">{''.join(site_rows)}<div class="metric"><b>{len(all_views)}</b><span>合计商品</span></div><div class="metric"><b>{sum(int(x["heat_label"]=="高热度信号") for x in all_views)}</b><span>高热度信号</span></div></section>
 <section class="toolbar"><input id="q" placeholder="搜索标题或 ASIN"><select id="site"><option value="">全部站点</option><option value="us">美国站</option><option value="au">澳洲站</option></select><select id="category"><option value="">全部类目</option>{"".join(f"<option>{html.escape(category)}</option>" for category in categories)}</select><label><input id="new" type="checkbox"> 仅首次发现</label></section>
 <div class="table-wrap"><table id="products"><thead><tr><th>#</th><th>商品</th><th>站点</th><th>类目</th><th>新品榜</th><th>价格</th><th>评分</th><th>评论</th><th>链接</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div>
 <footer>售价、采购成本、佣金、头程、广告和退货率仍需人工核验。</footer></main><button id="top" type="button" aria-label="回到顶部">↑</button><script>
-const q=document.getElementById('q'),site=document.getElementById('site'),category=document.getElementById('category'),fresh=document.getElementById('new');function apply(){{const text=q.value.toLowerCase().trim();document.querySelectorAll('#products tbody tr').forEach(r=>{{const ok=(!text||r.dataset.search.toLowerCase().includes(text))&&(!site.value||r.dataset.site===site.value)&&(!category.value||r.dataset.category===category.value||(!r.classList.contains('group-row')&&r.children[3].textContent===category.value))&&(!fresh.checked||r.querySelector('em'));r.classList.toggle('hidden',!ok)}})}}[q,site,category,fresh].forEach(x=>x.addEventListener('input',apply));document.getElementById('top').addEventListener('click',()=>window.scrollTo({{top:0,behavior:'smooth'}}));apply();</script></body></html>'''
+const q=document.getElementById('q'),site=document.getElementById('site'),category=document.getElementById('category'),fresh=document.getElementById('new');
+const preview=document.createElement('div');preview.className='image-preview-popover';preview.innerHTML='<img alt="商品图片放大预览">';document.body.appendChild(preview);
+const previewImage=preview.querySelector('img');
+function movePreview(event){{let left=event.clientX+16,top=event.clientY+16;if(left+356>window.innerWidth)left=Math.max(8,event.clientX-356);if(top+356>window.innerHeight)top=Math.max(8,event.clientY-356);preview.style.left=left+'px';preview.style.top=top+'px';}}
+function showPreview(event){{const source=event.currentTarget.dataset.image;if(!source)return;previewImage.src=source;preview.classList.add('show');movePreview(event);}}
+function hidePreview(){{preview.classList.remove('show');previewImage.removeAttribute('src');}}
+function apply(){{const text=q.value.toLowerCase().trim(),forceExpand=Boolean(text||site.value||category.value||fresh.checked);document.querySelectorAll('#products tbody tr[data-product]').forEach(r=>{{const ok=(!text||r.dataset.search.toLowerCase().includes(text))&&(!site.value||r.dataset.site===site.value)&&(!category.value||r.children[3].textContent===category.value)&&(!fresh.checked||r.querySelector('em'));r.classList.toggle('hidden',!ok);}});document.querySelectorAll('.group-row').forEach(group=>{{const groupId=group.dataset.group,products=Array.from(document.querySelectorAll('.product-row')).filter(row=>row.dataset.group===groupId),visible=products.some(row=>!row.classList.contains('hidden')),expanded=forceExpand||group.dataset.expanded==='true';group.classList.toggle('hidden',!visible);products.forEach((row,index)=>row.classList.toggle('collapsed',!expanded&&index>=10));const toggle=group.querySelector('.group-toggle');if(toggle)toggle.textContent=expanded?'收起':(products.length>10?'展开其余 '+(products.length-10)+' 条':'收起');const empty=document.querySelector('.empty-row[data-group="'+groupId+'"]');if(empty)empty.classList.toggle('hidden',!visible);}});}}
+document.querySelectorAll('.group-toggle').forEach(button=>button.addEventListener('click',()=>{{const group=button.closest('.group-row');group.dataset.expanded=group.dataset.expanded==='true'?'false':'true';apply();}}));
+document.querySelectorAll('.image-preview-trigger').forEach(trigger=>{{trigger.addEventListener('mouseenter',showPreview);trigger.addEventListener('mousemove',movePreview);trigger.addEventListener('mouseleave',hidePreview);}});
+[q,site,category,fresh].forEach(x=>x.addEventListener('input',apply));apply();</script></body></html>'''
     output.write_text(document, encoding="utf-8")
     return output
 
