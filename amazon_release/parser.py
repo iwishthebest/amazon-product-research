@@ -102,6 +102,20 @@ def _safe_image_url(value: str | None) -> str | None:
     return None
 
 
+def _image_attribute(node: _Node) -> str | None:
+    """Prefer Amazon's original image URL attributes before thumbnail URLs."""
+    for key in ("data-old-hires", "src", "data-src"):
+        value = node.attrs.get(key, "").strip()
+        if value:
+            return value
+    dynamic = node.attrs.get("data-a-dynamic-image", "")
+    if dynamic:
+        matches = re.findall(r"https?://[^\"'\\ ]+", dynamic)
+        if matches:
+            return matches[-1].replace("\\/", "/")
+    return None
+
+
 def extract_category_links(html: str, base_url: str, parent_node_id: str | None = None, depth: int = 0) -> list[CategoryLink]:
     """Extract unique New Releases category links from a page."""
     root = _parse(html)
@@ -195,8 +209,8 @@ def parse_product_cards(
             title = _first_text(card, lambda node: node.tag == "a" and "/dp/" in node.attrs.get("href", ""))
         href_node = _find(card, lambda node: node.tag == "a" and _ASIN_RE.search(node.attrs.get("href", "")) is not None)
         product_url = _safe_product_url(href_node.attrs.get("href", ""), asin, source_url) if href_node else _absolute_url(f"/dp/{asin}", source_url)
-        image_node = _find(card, lambda node: node.tag == "img" and bool(node.attrs.get("src") or node.attrs.get("data-src")))
-        image_url = _safe_image_url((image_node.attrs.get("src") or image_node.attrs.get("data-src")) if image_node else None)
+        image_node = _find(card, lambda node: node.tag == "img" and _image_attribute(node) is not None)
+        image_url = _safe_image_url(_image_attribute(image_node) if image_node else None)
         price_text = _first_text(card, lambda node: "a-price" in _class_tokens(node) or "a-offscreen" in _class_tokens(node))
         rating_text = _first_text(card, lambda node: "a-icon-alt" in _class_tokens(node))
         review_text = _first_text(card, lambda node: "a-size-small" in _class_tokens(node) and bool(re.search(r"\d", node.text())))
