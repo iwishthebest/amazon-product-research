@@ -308,6 +308,7 @@ def render_combined_html(
         if group != previous_group:
             rows.append(f'<tr class="group-row" data-category="{html.escape(str(item["category_name"]), quote=True)}"><th colspan="9">{site_labels.get(site, site.upper())} · {html.escape(str(item["category_name"]))}</th></tr>')
             previous_group = group
+            row_number = 0
         row_number += 1
         full_title = str(item["title"])
         compact_title = " ".join(full_title.split()[:8])

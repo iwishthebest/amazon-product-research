@@ -87,3 +87,26 @@ def test_render_combined_html_uses_larger_product_thumbnails(tmp_path):
 
     html = output.read_text(encoding="utf-8")
     assert ".product-cell img{width:96px;height:96px" in html
+
+
+def test_render_combined_html_restarts_row_numbers_for_each_category(tmp_path):
+    output = tmp_path / "combined.html"
+    render_combined_html({
+        "au": [
+            {
+                "asin": "B0ABC12345",
+                "title": "Pilates Ring",
+                "category_name": "Pilates",
+                "product_url": "https://www.amazon.com.au/dp/B0ABC12345",
+            },
+            {
+                "asin": "B0DEF12345",
+                "title": "Yoga Mat",
+                "category_name": "Yoga",
+                "product_url": "https://www.amazon.com.au/dp/B0DEF12345",
+            },
+        ],
+    }, output, report_date="2026-10-20")
+
+    html = output.read_text(encoding="utf-8")
+    assert html.count('<td class="row-number">1</td>') == 2
