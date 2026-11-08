@@ -18,7 +18,7 @@ $html = Join-Path $output "release_$date.html"
 
 python run_amazon_release.py --config $Config --timezone Asia/Shanghai --output-dir $output --db $dbPath
 if (!(Test-Path $snapshot) -or !(Test-Path $newProducts)) { throw "采集未生成当天 JSON/CSV：$date" }
-python render_release_report.py --snapshot $snapshot --new-products $newProducts --date $date --output $html
+python resolve_release_images.py --snapshot $snapshot --new-products $newProducts --output-html $html
 if (!(Test-Path $html)) { throw "HTML 报告生成失败：$html" }
 
 pytest -q tests/test_report.py tests/test_cli.py tests/test_m2_validation.py

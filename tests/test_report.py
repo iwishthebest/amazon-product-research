@@ -1,4 +1,4 @@
-from amazon_release.report import build_product_view, build_seller_analysis, render_html
+from amazon_release.report import build_product_view, build_seller_analysis, render_combined_html, render_html
 
 
 def test_build_seller_analysis_separates_heat_signal_from_sales_claim():
@@ -71,3 +71,19 @@ def test_render_html_contains_seller_dashboard_fields(tmp_path):
     assert "sortTable" in html
     assert "改进方向" in html
     assert "评论壁垒较低" in html
+
+
+def test_render_combined_html_uses_larger_product_thumbnails(tmp_path):
+    output = tmp_path / "combined.html"
+    render_combined_html({
+        "au": [{
+            "asin": "B0ABC12345",
+            "title": "Pilates Ring",
+            "category_name": "Pilates",
+            "image_url": "images/B0ABC12345.jpg",
+            "product_url": "https://www.amazon.com.au/dp/B0ABC12345",
+        }],
+    }, output, report_date="2026-10-20")
+
+    html = output.read_text(encoding="utf-8")
+    assert ".product-cell img{width:96px;height:96px" in html

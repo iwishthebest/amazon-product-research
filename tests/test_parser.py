@@ -70,6 +70,25 @@ def test_parse_product_cards_extracts_rank_and_product_fields():
     assert product.review_count == 12
 
 
+def test_parse_product_cards_accepts_amazon_ssl_image_cdn_and_prefers_largest_dynamic_image():
+    html = '''
+    <div data-asin="B0IMAGE123">
+      <a href="/dp/B0IMAGE123"><span class="p13n-sc-truncate">Image product</span></a>
+      <img src="https://images-fe.ssl-images-amazon.com/images/I/MAIN._AC_UL300_SR300,200_.jpg"
+        data-a-dynamic-image="{&quot;https://images-fe.ssl-images-amazon.com/images/I/MAIN._AC_UL300_SR300,200_.jpg&quot;:[300,200],&quot;https://images-fe.ssl-images-amazon.com/images/I/MAIN._AC_UL900_SR900,600_.jpg&quot;:[900,600]}" />
+    </div>
+    '''
+
+    product = parse_product_cards(
+        html,
+        source_url="https://www.amazon.com.au/gp/new-releases/sporting-goods/5044228051",
+        category_name="Pilates",
+        category_node_id="5044228051",
+    )[0]
+
+    assert product.image_url == "https://images-fe.ssl-images-amazon.com/images/I/MAIN._AC_UL900_SR900,600_.jpg"
+
+
 def test_parse_product_cards_can_find_asin_from_product_link_without_data_attribute():
     html = '<div class="zg-grid-general-faceout"><a href="/dp/B0LINK1234"><span class="p13n-sc-truncate">Linked product</span></a></div>'
     products = parse_product_cards(

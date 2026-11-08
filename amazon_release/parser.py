@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from html import unescape
 from html.parser import HTMLParser
 from typing import Callable, Iterable, Optional
 from urllib.parse import urljoin, urlparse
@@ -11,6 +12,10 @@ from .models import CategoryLink, ProductRecord
 
 _NODE_RE = re.compile(r"/(?:gp/)?new-releases/[^/?#]*/(\d{4,})", re.I)
 _ASIN_RE = re.compile(r"/(?:dp|gp/product)/([A-Z0-9]{10})(?:[/?#]|$)", re.I)
+_DYNAMIC_IMAGE_RE = re.compile(
+    r"[\"']?(https?://[^\"']+)[\"']?\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]",
+    re.I,
+)
 
 
 @dataclass
@@ -97,22 +102,32 @@ def _safe_image_url(value: str | None) -> str | None:
     if not value:
         return None
     host = urlparse(value).netloc.lower()
-    if host == "m.media-amazon.com" or host.endswith(".media-amazon.com") or host.endswith(".images-amazon.com"):
+    if (
+        host == "m.media-amazon.com"
+        or host.endswith(".media-amazon.com")
+        or host == "images-amazon.com"
+        or host.endswith(".images-amazon.com")
+        or host == "ssl-images-amazon.com"
+        or host.endswith(".ssl-images-amazon.com")
+    ):
         return value
     return None
 
 
 def _image_attribute(node: _Node) -> str | None:
     """Prefer Amazon's original image URL attributes before thumbnail URLs."""
+    dynamic = unescape(node.attrs.get("data-a-dynamic-image", "")).strip()
+    if dynamic:
+        candidates = [
+            (match.group(1).replace("\\/", "/"), int(match.group(2)), int(match.group(3)))
+            for match in _DYNAMIC_IMAGE_RE.finditer(dynamic)
+        ]
+        if candidates:
+            return max(candidates, key=lambda item: (item[1] * item[2], item[1]))[0]
     for key in ("data-old-hires", "src", "data-src"):
-        value = node.attrs.get(key, "").strip()
+        value = unescape(node.attrs.get(key, "")).strip()
         if value:
             return value
-    dynamic = node.attrs.get("data-a-dynamic-image", "")
-    if dynamic:
-        matches = re.findall(r"https?://[^\"'\\ ]+", dynamic)
-        if matches:
-            return matches[-1].replace("\\/", "/")
     return None
 
 

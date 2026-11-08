@@ -19,13 +19,34 @@ def extract_primary_image_url(page_html: str) -> str | None:
     for match in _IMAGE_RE.finditer(page_html):
         candidate = html_lib.unescape(match.group(1)).replace("\\/", "/")
         parsed = urlparse(candidate)
-        if parsed.netloc.lower().endswith("media-amazon.com") and "/images/I/" in parsed.path:
+        if _is_amazon_image_url(candidate) and "/images/I/" in parsed.path:
             return candidate
     return None
 
 
-def _image_page_url(asin: str) -> str:
-    return f"https://www.amazon.com.au/gp/product/images/{asin}"
+def _image_page_url(asin: str, product_url: str | None = None) -> str:
+    host = urlparse(product_url or "").netloc.lower()
+    if not host or not (
+        host == "amazon.com"
+        or host.endswith(".amazon.com")
+        or host == "amazon.com.au"
+        or host.endswith(".amazon.com.au")
+    ):
+        host = "www.amazon.com.au"
+    return f"https://{host}/gp/product/images/{asin}"
+
+
+def _is_amazon_image_url(value: str) -> bool:
+    parsed = urlparse(value)
+    host = parsed.netloc.lower()
+    return parsed.scheme in {"http", "https"} and (
+        host == "m.media-amazon.com"
+        or host.endswith(".media-amazon.com")
+        or host == "images-amazon.com"
+        or host.endswith(".images-amazon.com")
+        or host == "ssl-images-amazon.com"
+        or host.endswith(".ssl-images-amazon.com")
+    )
 
 
 def enrich_snapshot_images(
@@ -59,7 +80,17 @@ def enrich_snapshot_images(
         image_url = None
         for attempt in range(max(1, max_retries)):
             try:
-                page = session.get(_image_page_url(asin), timeout=timeout_seconds)
+                supplied_url = str(record.get("image_url") or "").strip()
+                if _is_amazon_image_url(supplied_url):
+                    image = session.get(supplied_url, timeout=timeout_seconds)
+                    content_type = image.headers.get("Content-Type", "")
+                    if image.status_code == 200 and content_type.startswith("image/") and len(image.content) > 1000:
+                        target.write_bytes(image.content)
+                        record["image_url"] = f"images/{asin}.jpg"
+                        downloaded += 1
+                        break
+
+                page = session.get(_image_page_url(asin, str(record.get("product_url") or "")), timeout=timeout_seconds)
                 if page.status_code == 200:
                     image_url = extract_primary_image_url(page.text)
                 if image_url:
