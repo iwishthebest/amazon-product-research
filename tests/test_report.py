@@ -172,3 +172,29 @@ def test_render_combined_html_hides_group_footer_when_filters_remove_all_product
     html = output.read_text(encoding="utf-8")
     assert "group-footer[data-group=" in html
     assert "footer.classList.toggle('hidden',!visible)" in html
+
+
+def test_render_combined_html_includes_category_overview_counts(tmp_path):
+    output = tmp_path / "combined.html"
+    render_combined_html({
+        "au": [
+            {
+                "asin": "B0ABC12345",
+                "title": "Pilates Ring",
+                "category_name": "Pilates",
+                "product_url": "https://www.amazon.com.au/dp/B0ABC12345",
+            },
+            {
+                "asin": "B0DEF12345",
+                "title": "Yoga Mat",
+                "category_name": "Yoga",
+                "product_url": "https://www.amazon.com.au/dp/B0DEF12345",
+            },
+        ],
+    }, output, report_date="2026-10-20")
+
+    html = output.read_text(encoding="utf-8")
+    assert "分类概览" in html
+    assert 'class="category-stat"' in html
+    assert "澳洲站 · Pilates" in html
+    assert "澳洲站 · Yoga" in html
