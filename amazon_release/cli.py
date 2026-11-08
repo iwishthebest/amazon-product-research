@@ -15,24 +15,24 @@ from .storage import SQLiteStore
 
 
 DEFAULT_CONFIG = {
-    "marketplace_id": "A39IBJ37TRP1C6",
-    "allowed_domain": "amazon.com.au",
-    "timezone": "Australia/Sydney",
+    "marketplace_id": "ATVPDKIKX0DER",
+    "allowed_domain": "amazon.com",
+    "timezone": "America/New_York",
     "delay_seconds": 1.0,
     "max_pages": 10,
     "max_category_depth": 2,
     "discover_subcategories": True,
-    "exclude_node_ids": ["5043942051"],
+    "exclude_node_ids": [],
     "roots": [
         {
             "name": "Pilates",
-            "node_id": "5044228051",
-            "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5044228051",
+            "node_id": "3408021",
+            "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3408021",
         },
         {
             "name": "Yoga",
-            "node_id": "5044231051",
-            "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5044231051",
+            "node_id": "3422251",
+            "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422251",
         },
     ],
 }
@@ -65,6 +65,12 @@ def load_config(path: str | Path | None) -> dict:
         supplied = json.loads(Path(path).read_text(encoding="utf-8"))
         config.update(supplied)
     config["roots"] = config.get("roots") or DEFAULT_CONFIG["roots"]
+    if path and "allowed_domain" not in supplied and config["roots"]:
+        host = urlparse(str(config["roots"][0].get("url", ""))).netloc.lower()
+        if host.startswith("www."):
+            host = host[4:]
+        if host:
+            config["allowed_domain"] = host
     return config
 
 
@@ -73,7 +79,7 @@ def _report_date(config: dict) -> str:
     return datetime.now(ZoneInfo(timezone_name)).date().isoformat()
 
 
-def run_once(config: dict, *, fixture_dir: str | Path | None, db_path: str | Path, output_dir: str | Path, dry_run: bool = False) -> dict:
+def run_once(config: dict, *, fixture_dir: str | Path | None, db_path: str | Path, output_dir: str | Path, dry_run: bool = False, categories_only: bool = False) -> dict:
     if fixture_dir:
         fetcher = FixtureFetcher(fixture_dir)
     else:
@@ -92,6 +98,17 @@ def run_once(config: dict, *, fixture_dir: str | Path | None, db_path: str | Pat
         max_pages=int(config.get("max_pages", 10)),
         max_category_depth=int(config.get("max_category_depth", 2)),
     )
+    if categories_only:
+        roots = [crawler._category(root) for root in config["roots"]]
+        categories = crawler.discover_categories(roots) if bool(config.get("discover_subcategories", True)) else roots
+        output = Path(output_dir)
+        output.mkdir(parents=True, exist_ok=True)
+        category_path = output / f"categories_{_report_date(config)}.json"
+        category_path.write_text(
+            json.dumps([category.__dict__ for category in categories], ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return {"categories": len(categories), "products": 0, "categories_file": str(category_path)}
     categories, products = crawler.run(
         config["roots"],
         discover_subcategories=bool(config.get("discover_subcategories", True)),
@@ -138,6 +155,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-pages", type=int, help="Override maximum pages per category")
     parser.add_argument("--max-category-depth", type=int, help="Override category discovery depth")
     parser.add_argument("--dry-run", action="store_true", help="Do not compare with prior database state")
+    parser.add_argument("--categories-only", action="store_true", help="Refresh category navigation without crawling products")
     return parser
 
 
@@ -162,6 +180,7 @@ def main(argv: list[str] | None = None) -> int:
         db_path=args.db,
         output_dir=args.output_dir,
         dry_run=args.dry_run,
+        categories_only=args.categories_only,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0

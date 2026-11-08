@@ -1,0 +1,177 @@
+[
+  {
+    "name": "Pilates",
+    "node_id": "3408021",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3408021",
+    "parent_node_id": null,
+    "depth": 0
+  },
+  {
+    "name": "Yoga",
+    "node_id": "3422251",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422251",
+    "parent_node_id": null,
+    "depth": 0
+  },
+  {
+    "name": "Exercise & Fitness",
+    "node_id": "3407731",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3407731/ref=zg_bsnr_unv_sporting-goods_2_3408021_1",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Barrels",
+    "node_id": "13290851",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/13290851/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Chairs",
+    "node_id": "13290901",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/13290901/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Fitness Circles",
+    "node_id": "13289261",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/13289261/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Flexbands",
+    "node_id": "13289271",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/13289271/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Floor Mats",
+    "node_id": "13290981",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/13290981/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Reformer Boxes",
+    "node_id": "13289351",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/13289351/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Reformers",
+    "node_id": "13291011",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/13291011/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Sets",
+    "node_id": "23827409011",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/23827409011/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Spine Supporters",
+    "node_id": "13291051",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/13291051/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Straps",
+    "node_id": "13290841",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/13290841/ref=zg_bsnr_nav_sporting-goods_3_3408021",
+    "parent_node_id": "3408021",
+    "depth": 1
+  },
+  {
+    "name": "Blocks",
+    "node_id": "3422271",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422271/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Foam Wedges",
+    "node_id": "3422281",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422281/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Mat Bags",
+    "node_id": "1240801011",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/1240801011/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Mat Straps",
+    "node_id": "21561470011",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/21561470011/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Mats",
+    "node_id": "3422301",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422301/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Meditation Benches",
+    "node_id": "23466414011",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/23466414011/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Sandbags",
+    "node_id": "3422311",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422311/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Silk Eye Bags",
+    "node_id": "3422321",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422321/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Starter Sets",
+    "node_id": "3422331",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422331/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Straps",
+    "node_id": "3422341",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422341/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Towels",
+    "node_id": "7261122011",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/7261122011/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  },
+  {
+    "name": "Yoga",
+    "node_id": "2371064011",
+    "url": "https://www.amazon.com/gp/new-releases/sporting-goods/2371064011/ref=zg_bsnr_nav_sporting-goods_3_3422251",
+    "parent_node_id": "3422251",
+    "depth": 1
+  }
+]

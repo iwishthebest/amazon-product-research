@@ -1,0 +1,177 @@
+[
+  {
+    "name": "Pilates",
+    "node_id": "5044228051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5044228051",
+    "parent_node_id": null,
+    "depth": 0
+  },
+  {
+    "name": "Yoga",
+    "node_id": "5044231051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5044231051",
+    "parent_node_id": null,
+    "depth": 0
+  },
+  {
+    "name": "Exercise & Fitness",
+    "node_id": "5043942051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5043942051/ref=zg_bsnr_unv_sporting-goods_2_5044228051_1",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Barrels",
+    "node_id": "5045049051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045049051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Chairs",
+    "node_id": "5045050051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045050051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Fitness Circles",
+    "node_id": "5045051051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045051051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Flexbands",
+    "node_id": "5045052051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045052051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Floor Mats",
+    "node_id": "5045053051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045053051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Reformer Boxes",
+    "node_id": "5045054051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045054051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Reformers",
+    "node_id": "5045055051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045055051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Sets",
+    "node_id": "5045056051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045056051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Spine Supporters",
+    "node_id": "5045057051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045057051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Straps",
+    "node_id": "5045058051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045058051/ref=zg_bsnr_nav_sporting-goods_3_5044228051",
+    "parent_node_id": "5044228051",
+    "depth": 1
+  },
+  {
+    "name": "Blocks",
+    "node_id": "5045082051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045082051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Foam Wedges",
+    "node_id": "5045084051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045084051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Mat Bags",
+    "node_id": "5045085051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045085051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Mat Straps",
+    "node_id": "8485808051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/8485808051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Mat Towels",
+    "node_id": "5045086051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045086051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Mats",
+    "node_id": "5045087051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045087051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Meditation Benches",
+    "node_id": "5045088051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045088051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Sandbags",
+    "node_id": "5045089051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045089051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Silk Eye Bags",
+    "node_id": "5045090051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045090051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Starter Sets",
+    "node_id": "5045091051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045091051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Straps",
+    "node_id": "5045092051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045092051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  },
+  {
+    "name": "Yoga",
+    "node_id": "5045083051",
+    "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5045083051/ref=zg_bsnr_nav_sporting-goods_3_5044231051",
+    "parent_node_id": "5044231051",
+    "depth": 1
+  }
+]
