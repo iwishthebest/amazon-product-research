@@ -172,3 +172,19 @@ def test_render_combined_html_hides_group_footer_when_filters_remove_all_product
     html = output.read_text(encoding="utf-8")
     assert "group-footer[data-group=" in html
     assert "footer.classList.toggle('hidden',!visible)" in html
+
+
+def test_render_combined_html_centers_and_enlarges_group_toggle(tmp_path):
+    output = tmp_path / "combined.html"
+    render_combined_html({
+        "au": [{
+            "asin": "B0ABC12345",
+            "title": "Pilates Ring",
+            "category_name": "Pilates",
+            "product_url": "https://www.amazon.com.au/dp/B0ABC12345",
+        }],
+    }, output, report_date="2026-10-20")
+
+    html = output.read_text(encoding="utf-8")
+    assert ".group-footer td{padding:12px 10px;text-align:center" in html
+    assert ".group-toggle{min-width:180px" in html
