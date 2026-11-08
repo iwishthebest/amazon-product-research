@@ -92,8 +92,8 @@ def build_seller_analysis(
         "competition": competition,
         "improvement": "；".join(advice),
         "rank_signal": f"新品榜第 {rank} 名" if rank is not None else "新品榜未排名",
-        "rating_signal": f"{rating:.1f}/5" if rating is not None else "无评分",
-        "review_signal": f"{reviews:,} 条评论" if reviews is not None else "无评论数",
+        "rating_signal": f"{rating:.1f}/5" if rating is not None else "--",
+        "review_signal": f"{reviews:,} 条评论" if reviews is not None else "--",
     }
 
 
@@ -297,24 +297,32 @@ def render_combined_html(
             f'<div class="metric"><b>{len(rows)}</b><span>{site_labels.get(site, site.upper())}商品</span></div>'
             f'<div class="metric"><b>{sum(bool(x["is_new"]) for x in rows)}</b><span>{site_labels.get(site, site.upper())}首次发现</span></div>'
         )
+    categories = sorted({str(item["category_name"]) for item in all_views})
     rows = []
+    row_number = 0
     ordered_views = sorted(all_views, key=lambda x: (str(x["site"]), str(x["category_name"]), -int(x["score"]), x["rank"] is None, x["rank"] or 999999))
     previous_group = None
     for item in ordered_views:
         site = str(item["site"])
         group = (site, str(item["category_name"]))
         if group != previous_group:
-            rows.append(f'<tr class="group-row"><th colspan="9">{site_labels.get(site, site.upper())} · {html.escape(str(item["category_name"]))}</th></tr>')
+            rows.append(f'<tr class="group-row" data-category="{html.escape(str(item["category_name"]), quote=True)}"><th colspan="9">{site_labels.get(site, site.upper())} · {html.escape(str(item["category_name"]))}</th></tr>')
             previous_group = group
-        price = f'{item["currency"] or "AUD"} {item["price"]}' if item["price"] else "未取得"
+        row_number += 1
+        full_title = str(item["title"])
+        compact_title = " ".join(full_title.split()[:8])
+        if len(compact_title) > 72:
+            compact_title = compact_title[:72].rstrip() + "…"
+        detail_title = full_title if compact_title == full_title else full_title
+        price = f'{item["currency"] or "--"} {item["price"]}' if item["price"] else "--"
         badge = '<em>首次发现</em>' if item["is_new"] else ''
         rows.append(
             f'<tr data-site="{site}" data-search="{html.escape(str(item["title"])+" "+str(item["asin"]), quote=True)}">'
-            f'<td class="product-cell"><img loading="lazy" src="{html.escape(str(item["image_url"]), quote=True)}" alt="{html.escape(str(item["title"]), quote=True)}" onerror="this.classList.add(\'image-missing\')"><div><strong>{html.escape(str(item["title"]))}</strong><small>{html.escape(str(item["asin"]))}</small></div></td>'
+            f'<td class="row-number">{row_number}</td><td class="product-cell"><img loading="lazy" src="{html.escape(str(item["image_url"]), quote=True)}" alt="{html.escape(str(item["title"]), quote=True)}" onerror="this.classList.add(\'image-missing\')"><div><strong>{html.escape(compact_title)}</strong><small>{html.escape(detail_title)}</small><small>{html.escape(str(item["asin"]))}</small></div></td>'
             f'<td><span class="site {site}">{site_labels.get(site, site.upper())}</span></td>'
             f'<td>{html.escape(str(item["category_name"]))}</td><td>{html.escape(str(item["rank_signal"]))}</td>'
             f'<td>{html.escape(price)}</td><td>{html.escape(str(item["rating_signal"]))}</td>'
-            f'<td>{html.escape(str(item["review_signal"]))}</td><td><b class="score">{item["score"]}</b></td>'
+            f'<td>{html.escape(str(item["review_signal"]))}</td>'
             f'<td>{badge}<a href="{html.escape(str(item["product_url"]), quote=True)}" target="_blank" rel="noreferrer">打开 ↗</a></td></tr>'
         )
     output = Path(output_path)
@@ -322,15 +330,17 @@ def render_combined_html(
     document = f'''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Amazon 美国站与澳洲站新品日报 · {html.escape(report_date)}</title>
 <style>
-:root{{--ink:#17202a;--muted:#667085;--line:#e5e7eb;--bg:#f6f8fb;--blue:#155e75}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Segoe UI,"Microsoft YaHei",sans-serif}}header{{padding:24px 5vw;background:linear-gradient(120deg,#17202a,#155e75);color:#fff}}header h1{{margin:0 0 4px;font-size:clamp(22px,3vw,34px)}}header p{{margin:0;opacity:.82}}main{{width:min(1500px,92vw);margin:18px auto 48px}}.notice{{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 14px;margin-bottom:14px}}.summary{{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}}.metric{{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 15px;min-width:130px}}.metric b{{display:block;color:var(--blue);font-size:23px}}.metric span{{color:var(--muted);font-size:12px}}.toolbar{{display:flex;gap:9px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:14px;position:sticky;top:0;z-index:2}}input,select{{padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}}input{{min-width:260px;flex:1}}.table-wrap{{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:auto}}table{{border-collapse:collapse;width:100%;min-width:980px}}th,td{{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}}th{{color:var(--muted);font-size:12px;white-space:nowrap}}.group-row th{{padding:12px 10px 7px;background:#f1f5f9;color:var(--blue);font-size:13px;border-top:8px solid var(--bg)}}td strong,td small{{display:block}}td small{{color:var(--muted);font-size:11px;margin-top:2px}}.product-cell{{display:flex;align-items:center;gap:8px;min-width:300px}}.product-cell img{{width:48px;height:48px;object-fit:contain;border:1px solid var(--line);border-radius:7px;background:#fff;flex:0 0 48px}}.product-cell img.image-missing{{visibility:hidden}}.site{{display:inline-block;padding:3px 7px;border-radius:999px;font-size:12px;font-weight:600}}.site.us{{background:#dbeafe;color:#1d4ed8}}.site.au{{background:#dcfce7;color:#166534}}.score{{color:#0f766e}}em{{font-style:normal;color:#b45309;font-size:11px;margin-right:7px}}a{{color:#b45309;text-decoration:none;white-space:nowrap}}a:hover{{text-decoration:underline}}.hidden{{display:none!important}}footer{{color:var(--muted);margin-top:13px;font-size:12px}}
+:root{{--ink:#17202a;--muted:#667085;--line:#e5e7eb;--bg:#f6f8fb;--blue:#155e75}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Segoe UI,"Microsoft YaHei",sans-serif}}header{{padding:24px 5vw;background:linear-gradient(120deg,#17202a,#155e75);color:#fff}}header h1{{margin:0 0 4px;font-size:clamp(22px,3vw,34px)}}header p{{margin:0;opacity:.82}}main{{width:min(1500px,92vw);margin:18px auto 48px}}.notice{{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 14px;margin-bottom:14px}}.summary{{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}}.metric{{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 15px;min-width:130px}}.metric b{{display:block;color:var(--blue);font-size:23px}}.metric span{{color:var(--muted);font-size:12px}}.toolbar{{display:flex;gap:9px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:14px;position:sticky;top:0;z-index:2}}input,select{{padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}}input{{min-width:260px;flex:1}}.table-wrap{{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:auto}}table{{border-collapse:collapse;width:100%;min-width:980px}}th,td{{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}}th{{color:var(--muted);font-size:12px;white-space:nowrap}}.group-row th{{padding:12px 10px 7px;background:#f1f5f9;color:var(--blue);font-size:13px;border-top:8px solid var(--bg)}}td strong,td small{{display:block}}td small{{color:var(--muted);font-size:11px;margin-top:2px}}.row-number{{width:42px;color:var(--muted);font-variant-numeric:tabular-nums}}.product-cell{{display:flex;align-items:center;gap:8px;min-width:300px}}.product-cell img{{width:48px;height:48px;object-fit:contain;border:1px solid var(--line);border-radius:7px;background:#fff;flex:0 0 48px}}.product-cell img.image-missing{{visibility:hidden}}.site{{display:inline-block;padding:3px 7px;border-radius:999px;font-size:12px;font-weight:600}}.site.us{{background:#dbeafe;color:#1d4ed8}}.site.au{{background:#dcfce7;color:#166534}}.score{{color:#0f766e}}em{{font-style:normal;color:#b45309;font-size:11px;margin-right:7px}}a{{color:#b45309;text-decoration:none;white-space:nowrap}}a:hover{{text-decoration:underline}}.hidden{{display:none!important}}footer{{color:var(--muted);margin-top:13px;font-size:12px}}#top{{position:fixed;right:20px;bottom:20px;border:0;border-radius:999px;background:var(--blue);color:white;width:42px;height:42px;cursor:pointer;box-shadow:0 4px 12px #17202a33}}
 </style><body><header><h1>Amazon 美国站与澳洲站新品日报</h1><p>双站点合并视图 · Pilates / Yoga · 报告日期：{html.escape(report_date)}</p></header><main>
-<div class="notice"><b>证据边界：</b>“首次发现”表示本地程序第一次观察到该 ASIN。机会评分和新品榜热度是筛选信号，不等于销量确认。当前未取得 Amazon 销量、BSR 历史或利润成本。</div>
+
 <section class="summary">{''.join(site_rows)}<div class="metric"><b>{len(all_views)}</b><span>合计商品</span></div><div class="metric"><b>{sum(int(x["heat_label"]=="高热度信号") for x in all_views)}</b><span>高热度信号</span></div></section>
-<section class="toolbar"><input id="q" placeholder="搜索标题或 ASIN"><select id="site"><option value="">全部站点</option><option value="us">美国站</option><option value="au">澳洲站</option></select><label><input id="new" type="checkbox"> 仅首次发现</label></section>
-<div class="table-wrap"><table id="products"><thead><tr><th>商品</th><th>站点</th><th>类目</th><th>新品榜</th><th>价格</th><th>评分</th><th>评论</th><th>机会评分</th><th>链接</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div>
-<footer>评分用于研究排序，不是销量预测。售价、采购成本、佣金、头程、广告和退货率仍需人工核验。</footer></main><script>
-const q=document.getElementById('q'),site=document.getElementById('site'),fresh=document.getElementById('new');function apply(){{const text=q.value.toLowerCase().trim();document.querySelectorAll('#products tbody tr').forEach(r=>{{const ok=(!text||r.dataset.search.toLowerCase().includes(text))&&(!site.value||r.dataset.site===site.value)&&(!fresh.checked||r.querySelector('em'));r.classList.toggle('hidden',!ok)}})}}[q,site,fresh].forEach(x=>x.addEventListener('input',apply));apply();</script></body></html>'''
+<section class="toolbar"><input id="q" placeholder="搜索标题或 ASIN"><select id="site"><option value="">全部站点</option><option value="us">美国站</option><option value="au">澳洲站</option></select><select id="category"><option value="">全部类目</option>{"".join(f"<option>{html.escape(category)}</option>" for category in categories)}</select><label><input id="new" type="checkbox"> 仅首次发现</label></section>
+<div class="table-wrap"><table id="products"><thead><tr><th>#</th><th>商品</th><th>站点</th><th>类目</th><th>新品榜</th><th>价格</th><th>评分</th><th>评论</th><th>链接</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div>
+<footer>售价、采购成本、佣金、头程、广告和退货率仍需人工核验。</footer></main><button id="top" type="button" aria-label="回到顶部">↑</button><script>
+const q=document.getElementById('q'),site=document.getElementById('site'),category=document.getElementById('category'),fresh=document.getElementById('new');function apply(){{const text=q.value.toLowerCase().trim();document.querySelectorAll('#products tbody tr').forEach(r=>{{const ok=(!text||r.dataset.search.toLowerCase().includes(text))&&(!site.value||r.dataset.site===site.value)&&(!category.value||r.dataset.category===category.value||(!r.classList.contains('group-row')&&r.children[3].textContent===category.value))&&(!fresh.checked||r.querySelector('em'));r.classList.toggle('hidden',!ok)}})}}[q,site,category,fresh].forEach(x=>x.addEventListener('input',apply));document.getElementById('top').addEventListener('click',()=>window.scrollTo({{top:0,behavior:'smooth'}}));apply();</script></body></html>'''
     output.write_text(document, encoding="utf-8")
     return output
+
+
 
 
