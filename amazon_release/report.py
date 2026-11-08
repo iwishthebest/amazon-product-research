@@ -17,7 +17,7 @@ def _safe_product_url(record: dict) -> str:
     asin = str(record.get("asin", "")).strip().upper()
     candidate = str(record.get("product_url") or f"https://www.amazon.com.au/dp/{asin}")
     parsed = urlparse(candidate)
-    if parsed.netloc.lower() not in {"amazon.com.au", "www.amazon.com.au"}:
+    if parsed.netloc.lower() not in {"amazon.com.au", "www.amazon.com.au", "amazon.com", "www.amazon.com"}:
         return f"https://www.amazon.com.au/dp/{asin}"
     return candidate
 
@@ -271,5 +271,58 @@ function setView(view) {{ const table=view==='table'; tableView.classList.toggle
 function sortTable(key) {{ const table=document.getElementById('comparison-table'), body=table.querySelector('tbody'), rows=Array.from(body.querySelectorAll('tr')); const index={{rank:2,price:3,reviews:5,score:6}}[key]; rows.sort((a,b)=>Number(a.children[index].dataset.sortValue||0)-Number(b.children[index].dataset.sortValue||0)); rows.forEach(row=>body.appendChild(row)); }}
 document.querySelectorAll('.view-btn').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.view))); document.querySelectorAll('#comparison-table th[data-key]').forEach(th=>th.addEventListener('click',()=>sortTable(th.dataset.key))); [search,category,heat,newOnly].forEach(el=>el.addEventListener('input',applyFilters)); applyFilters();
 </script></body></html>'''
+    output.write_text(document, encoding="utf-8")
+    return output
+
+
+def render_combined_html(
+    site_records: dict[str, Iterable[dict]],
+    output_path: str | Path,
+    *,
+    report_date: str,
+    site_new_asins: dict[str, set[str]] | None = None,
+) -> Path:
+    """Render a compact side-by-side report for multiple marketplaces."""
+    all_views: list[dict[str, object]] = []
+    for site, records in site_records.items():
+        for record in records:
+            view = build_product_view(record, (site_new_asins or {}).get(site, set()))
+            view["site"] = site
+            all_views.append(view)
+    site_labels = {"us": "美国站", "au": "澳洲站"}
+    site_rows = []
+    for site in site_records:
+        rows = [item for item in all_views if item["site"] == site]
+        site_rows.append(
+            f'<div class="metric"><b>{len(rows)}</b><span>{site_labels.get(site, site.upper())}商品</span></div>'
+            f'<div class="metric"><b>{sum(bool(x["is_new"]) for x in rows)}</b><span>{site_labels.get(site, site.upper())}首次发现</span></div>'
+        )
+    rows = []
+    for item in sorted(all_views, key=lambda x: (-int(x["score"]), str(x["site"]), x["rank"] is None, x["rank"] or 999999)):
+        site = str(item["site"])
+        price = f'{item["currency"] or "AUD"} {item["price"]}' if item["price"] else "未取得"
+        badge = '<em>首次发现</em>' if item["is_new"] else ''
+        rows.append(
+            f'<tr data-site="{site}" data-search="{html.escape(str(item["title"])+" "+str(item["asin"]), quote=True)}">'
+            f'<td><strong>{html.escape(str(item["title"]))}</strong><small>{html.escape(str(item["asin"]))}</small></td>'
+            f'<td><span class="site {site}">{site_labels.get(site, site.upper())}</span></td>'
+            f'<td>{html.escape(str(item["category_name"]))}</td><td>{html.escape(str(item["rank_signal"]))}</td>'
+            f'<td>{html.escape(price)}</td><td>{html.escape(str(item["rating_signal"]))}</td>'
+            f'<td>{html.escape(str(item["review_signal"]))}</td><td><b class="score">{item["score"]}</b></td>'
+            f'<td>{badge}<a href="{html.escape(str(item["product_url"]), quote=True)}" target="_blank" rel="noreferrer">打开 ↗</a></td></tr>'
+        )
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    document = f'''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon 美国站与澳洲站新品日报 · {html.escape(report_date)}</title>
+<style>
+:root{{--ink:#17202a;--muted:#667085;--line:#e5e7eb;--bg:#f6f8fb;--blue:#155e75}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Segoe UI,"Microsoft YaHei",sans-serif}}header{{padding:24px 5vw;background:linear-gradient(120deg,#17202a,#155e75);color:#fff}}header h1{{margin:0 0 4px;font-size:clamp(22px,3vw,34px)}}header p{{margin:0;opacity:.82}}main{{width:min(1500px,92vw);margin:18px auto 48px}}.notice{{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 14px;margin-bottom:14px}}.summary{{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}}.metric{{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 15px;min-width:130px}}.metric b{{display:block;color:var(--blue);font-size:23px}}.metric span{{color:var(--muted);font-size:12px}}.toolbar{{display:flex;gap:9px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:14px;position:sticky;top:0;z-index:2}}input,select{{padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}}input{{min-width:260px;flex:1}}.table-wrap{{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:auto}}table{{border-collapse:collapse;width:100%;min-width:980px}}th,td{{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}}th{{color:var(--muted);font-size:12px;white-space:nowrap}}td strong,td small{{display:block}}td small{{color:var(--muted);font-size:11px;margin-top:2px}}.site{{display:inline-block;padding:3px 7px;border-radius:999px;font-size:12px;font-weight:600}}.site.us{{background:#dbeafe;color:#1d4ed8}}.site.au{{background:#dcfce7;color:#166534}}.score{{color:#0f766e}}em{{font-style:normal;color:#b45309;font-size:11px;margin-right:7px}}a{{color:#b45309;text-decoration:none;white-space:nowrap}}a:hover{{text-decoration:underline}}.hidden{{display:none!important}}footer{{color:var(--muted);margin-top:13px;font-size:12px}}
+</style><body><header><h1>Amazon 美国站与澳洲站新品日报</h1><p>双站点合并视图 · Pilates / Yoga · 报告日期：{html.escape(report_date)}</p></header><main>
+<div class="notice"><b>证据边界：</b>“首次发现”表示本地程序第一次观察到该 ASIN。机会评分和新品榜热度是筛选信号，不等于销量确认。当前未取得 Amazon 销量、BSR 历史或利润成本。</div>
+<section class="summary">{''.join(site_rows)}<div class="metric"><b>{len(all_views)}</b><span>合计商品</span></div><div class="metric"><b>{sum(int(x["heat_label"]=="高热度信号") for x in all_views)}</b><span>高热度信号</span></div></section>
+<section class="toolbar"><input id="q" placeholder="搜索标题或 ASIN"><select id="site"><option value="">全部站点</option><option value="us">美国站</option><option value="au">澳洲站</option></select><label><input id="new" type="checkbox"> 仅首次发现</label></section>
+<div class="table-wrap"><table id="products"><thead><tr><th>商品</th><th>站点</th><th>类目</th><th>新品榜</th><th>价格</th><th>评分</th><th>评论</th><th>机会评分</th><th>链接</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div>
+<footer>评分用于研究排序，不是销量预测。售价、采购成本、佣金、头程、广告和退货率仍需人工核验。</footer></main><script>
+const q=document.getElementById('q'),site=document.getElementById('site'),fresh=document.getElementById('new');function apply(){{const text=q.value.toLowerCase().trim();document.querySelectorAll('#products tbody tr').forEach(r=>{{const ok=(!text||r.dataset.search.toLowerCase().includes(text))&&(!site.value||r.dataset.site===site.value)&&(!fresh.checked||r.querySelector('em'));r.classList.toggle('hidden',!ok)}})}}[q,site,fresh].forEach(x=>x.addEventListener('input',apply));apply();</script></body></html>'''
     output.write_text(document, encoding="utf-8")
     return output
