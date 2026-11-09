@@ -1,0 +1,22 @@
+{
+  "marketplace_id": "A39IBJ37TRP1C6",
+  "allowed_domain": "amazon.com.au",
+  "timezone": "Australia/Sydney",
+  "delay_seconds": 2,
+  "max_pages": 10,
+  "max_category_depth": 2,
+  "discover_subcategories": true,
+  "exclude_node_ids": ["5043942051"],
+  "roots": [
+    {
+      "name": "Pilates",
+      "node_id": "5044228051",
+      "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5044228051"
+    },
+    {
+      "name": "Yoga",
+      "node_id": "5044231051",
+      "url": "https://www.amazon.com.au/gp/new-releases/sporting-goods/5044231051"
+    }
+  ]
+}

@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 from zoneinfo import ZoneInfo
@@ -74,9 +74,12 @@ def load_config(path: str | Path | None) -> dict:
     return config
 
 
-def _report_date(config: dict) -> str:
+def _report_date(config: dict, now: datetime | None = None) -> str:
     timezone_name = config.get("timezone", "UTC")
-    return datetime.now(ZoneInfo(timezone_name)).date().isoformat()
+    value = now or datetime.now(timezone.utc)
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(ZoneInfo(timezone_name)).date().isoformat()
 
 
 def run_once(config: dict, *, fixture_dir: str | Path | None, db_path: str | Path, output_dir: str | Path, dry_run: bool = False, categories_only: bool = False) -> dict:

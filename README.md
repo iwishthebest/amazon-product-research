@@ -103,6 +103,47 @@ Arguments: C:\path\to\AmazonRelease\run_amazon_release.py --config C:\path\to\Am
 Start in: C:\path\to\AmazonRelease
 ```
 
+也可以使用仓库内脚本完成本机每日落盘。脚本会写入当天的 JSON 快照、分类快照、首次发现 CSV 和 SQLite 历史库：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\daily_collect.ps1 `
+  -Repo C:\path\to\AmazonRelease `
+  -Config config.json `
+  -Timezone America/New_York
+```
+
+每周汇总会在指定的本地时区按周一至周日取数，并为每个 ASIN 只保留一行。周二执行时会自动包含周一和周二已经落盘的观测，尚未落盘的日期不会产生记录。每次汇总同时生成 CSV 和 HTML 网页，文件名分别为 `weekly_new_products_YYYY-MM-DD_YYYY-MM-DD.csv` 和 `weekly_new_products_YYYY-MM-DD_YYYY-MM-DD.html`。HTML 网页完全沿用日报的卡片视图、对比表、筛选器和选品分析，只额外增加商品级的“上新日期”。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\weekly_delivery.ps1 `
+  -Repo C:\path\to\AmazonRelease `
+  -Timezone America/New_York
+```
+
+`first_seen_date` 表示本程序首次观察到商品的日期，不等于 Amazon 实际 listing 创建或上新日期。周报只汇总本机已落盘的每日观测。
+
+### 多站点时区调度
+
+多站点调度使用 `config.sites.json`，可从 `config.sites.example.json` 复制。数据库时间按 UTC 保存，报告日期按站点业务时区计算，操作员总览使用 `Asia/Shanghai`。当前推荐 AU 使用 `Australia/Sydney`，US 使用 `America/Los_Angeles`。
+
+分发器每 30 分钟检查一次各站点的本地执行时间。同一站点同一业务日期只会成功交付一次，报告分别落在 `data/reports/au` 和 `data/reports/us`。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\daily_dispatch.ps1 `
+  -Repo C:\path\to\AmazonRelease `
+  -SitesConfig config.sites.json
+```
+
+注册任务前可先用 `-DryRun` 查看当前到期站点，不会抓取数据或推送变更。
+
+注册 Windows 任务时使用：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1 `
+  -Repo C:\path\to\AmazonRelease `
+  -SitesConfig config.sites.json
+```
+
 ## 图文 HTML 报告
 
 将当天 JSON 快照渲染为按分类分组的商品卡片报告：

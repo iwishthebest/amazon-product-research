@@ -1,0 +1,22 @@
+{
+  "marketplace_id": "ATVPDKIKX0DER",
+  "allowed_domain": "amazon.com",
+  "timezone": "America/Los_Angeles",
+  "delay_seconds": 2,
+  "max_pages": 10,
+  "max_category_depth": 2,
+  "discover_subcategories": true,
+  "exclude_node_ids": [],
+  "roots": [
+    {
+      "name": "Pilates",
+      "node_id": "3408021",
+      "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3408021"
+    },
+    {
+      "name": "Yoga",
+      "node_id": "3422251",
+      "url": "https://www.amazon.com/gp/new-releases/sporting-goods/3422251"
+    }
+  ]
+}

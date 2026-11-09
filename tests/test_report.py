@@ -1,4 +1,10 @@
-from amazon_release.report import build_product_view, build_seller_analysis, render_combined_html, render_html
+from amazon_release.report import (
+    build_product_view,
+    build_seller_analysis,
+    render_combined_html,
+    render_html,
+    render_weekly_html,
+)
 
 
 def test_build_seller_analysis_separates_heat_signal_from_sales_claim():
@@ -71,6 +77,38 @@ def test_render_html_contains_seller_dashboard_fields(tmp_path):
     assert "sortTable" in html
     assert "改进方向" in html
     assert "评论壁垒较低" in html
+
+
+def test_render_weekly_html_shows_first_seen_dates_and_safe_product_links(tmp_path):
+    output = tmp_path / "weekly.html"
+    render_weekly_html([
+        {
+            "asin": "B0ABC12345",
+            "title": "Pilates <Ring>",
+            "category_name": "Pilates",
+            "rank": 1,
+            "price": 29.99,
+            "currency": "AUD",
+            "rating": 4.8,
+            "review_count": 12,
+            "first_seen_date": "2026-11-08",
+            "week_first_observed_date": "2026-11-08",
+            "observed_dates": "2026-11-08",
+            "observation_count": 1,
+            "observed_at": "2026-11-08T03:46:27+00:00",
+            "product_url": "https://www.amazon.com.au/dp/B0ABC12345",
+        }
+    ], output, start_date="2026-11-02", end_date="2026-11-08", timezone_name="Asia/Shanghai")
+
+    document = output.read_text(encoding="utf-8")
+    assert "Amazon 新品周报" in document
+    assert "上新日期" in document
+    assert "table-wrap" in document
+    assert "site" in document
+    assert "本周出现日期" not in document
+    assert "2026-11-08" in document
+    assert "&lt;Ring&gt;" in document
+    assert "https://www.amazon.com.au/dp/B0ABC12345" in document
 
 
 def test_render_combined_html_uses_larger_product_thumbnails(tmp_path):

@@ -1,11 +1,19 @@
 import json
+from datetime import datetime, timezone
 
-from amazon_release.cli import build_parser, main
+from amazon_release.cli import _report_date, build_parser, main
 
 
 def test_cli_exposes_delay_override():
     args = build_parser().parse_args(["--delay-seconds", "0"])
     assert args.delay_seconds == 0
+
+
+def test_report_date_uses_configured_timezone_for_utc_instant():
+    instant = datetime(2026, 11, 8, 23, 30, tzinfo=timezone.utc)
+
+    assert _report_date({"timezone": "Asia/Shanghai"}, instant) == "2026-11-09"
+    assert _report_date({"timezone": "America/Los_Angeles"}, instant) == "2026-11-08"
 
 
 def test_fixture_mode_generates_daily_report(tmp_path):

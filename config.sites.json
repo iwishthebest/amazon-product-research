@@ -1,0 +1,21 @@
+{
+  "operator_timezone": "Asia/Shanghai",
+  "sites": [
+    {
+      "code": "AU",
+      "timezone": "Australia/Sydney",
+      "run_local_time": "08:30",
+      "config": "config.au.json",
+      "output_dir": "data/reports/au",
+      "db": "data/amazon_release_au.sqlite3"
+    },
+    {
+      "code": "US",
+      "timezone": "America/Los_Angeles",
+      "run_local_time": "08:30",
+      "config": "config.us.json",
+      "output_dir": "data/reports/us",
+      "db": "data/amazon_release_us.sqlite3"
+    }
+  ]
+}

@@ -4,9 +4,10 @@ import csv
 import json
 import sqlite3
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
+from zoneinfo import ZoneInfo
 
 from .models import ProductRecord
 
@@ -133,6 +134,110 @@ class SQLiteStore:
         output.parent.mkdir(parents=True, exist_ok=True)
         payload = [self._observed_row(product) for product in products]
         output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        return output
+
+    @staticmethod
+    def _weekly_utc_bounds(start_date: str, end_date: str, timezone_name: str) -> tuple[str, str]:
+        local_zone = ZoneInfo(timezone_name)
+        start = datetime.combine(date.fromisoformat(start_date), time.min, tzinfo=local_zone)
+        end = datetime.combine(date.fromisoformat(end_date), time.min, tzinfo=local_zone)
+        end = end + timedelta(days=1)
+        return start.astimezone(timezone.utc).isoformat(), end.astimezone(timezone.utc).isoformat()
+
+    @staticmethod
+    def _local_date(value: str | None, timezone_name: str) -> str:
+        if not value:
+            return ""
+        observed = datetime.fromisoformat(value)
+        if observed.tzinfo is None:
+            observed = observed.replace(tzinfo=timezone.utc)
+        return observed.astimezone(ZoneInfo(timezone_name)).date().isoformat()
+
+    def weekly_products(
+        self,
+        start_date: str,
+        end_date: str,
+        *,
+        timezone_name: str = "UTC",
+    ) -> list[dict[str, object]]:
+        """Return one row per product observed during the inclusive local date range."""
+        utc_start, utc_end = self._weekly_utc_bounds(start_date, end_date, timezone_name)
+        rows = self.connection.execute(
+            """WITH scoped AS (
+                    SELECT o.id, o.marketplace_id, o.category_node_id, p.category_name, o.asin,
+                           o.observed_at, o.rank, p.title, p.product_url, p.image_url,
+                           o.price, o.currency, p.rating, p.review_count, o.source_url,
+                           p.first_seen_at,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY o.marketplace_id, o.asin
+                               ORDER BY o.observed_at DESC, o.id DESC
+                           ) AS latest_rank
+                      FROM observations o
+                      JOIN products p
+                        ON p.marketplace_id=o.marketplace_id AND p.asin=o.asin
+                     WHERE o.observed_at >= ? AND o.observed_at < ?
+                ), aggregates AS (
+                    SELECT marketplace_id, asin,
+                           MIN(observed_at) AS week_first_observed_at,
+                           COUNT(*) AS observation_count,
+                           GROUP_CONCAT(observed_at, '|') AS observed_at_values
+                      FROM scoped
+                     GROUP BY marketplace_id, asin
+                )
+                SELECT latest.observed_at, latest.marketplace_id, latest.category_node_id,
+                       latest.category_name, latest.asin, latest.rank, latest.title,
+                       latest.product_url, latest.image_url, latest.price, latest.currency,
+                       latest.rating, latest.review_count, latest.source_url,
+                       latest.first_seen_at, aggregates.week_first_observed_at,
+                       aggregates.observation_count, aggregates.observed_at_values
+                  FROM scoped latest
+                  JOIN aggregates
+                    ON aggregates.marketplace_id=latest.marketplace_id
+                   AND aggregates.asin=latest.asin
+                 WHERE latest.latest_rank=1
+                 ORDER BY latest.category_name,
+                          CASE WHEN latest.rank IS NULL THEN 999999 ELSE latest.rank END,
+                          latest.asin""",
+            (utc_start, utc_end),
+        ).fetchall()
+        products: list[dict[str, object]] = []
+        for row in rows:
+            product = dict(row)
+            observed_values = str(product.pop("observed_at_values") or "").split("|")
+            local_dates = sorted({
+                self._local_date(value, timezone_name)
+                for value in observed_values
+                if value
+            })
+            product["first_seen_date"] = self._local_date(product.get("first_seen_at"), timezone_name)
+            product["week_first_observed_date"] = self._local_date(
+                product.get("week_first_observed_at"), timezone_name
+            )
+            product["observed_dates"] = ",".join(local_dates)
+            products.append(product)
+        return products
+
+    def export_weekly_csv(
+        self,
+        start_date: str,
+        end_date: str,
+        path: str | Path,
+        *,
+        timezone_name: str = "UTC",
+    ) -> Path:
+        rows = self.weekly_products(start_date, end_date, timezone_name=timezone_name)
+        output = Path(path)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        fields = [
+            "marketplace_id", "asin", "title", "category_name", "category_node_id",
+            "first_seen_date", "first_seen_at", "week_first_observed_date", "week_first_observed_at",
+            "observed_dates", "observation_count", "observed_at", "rank", "price",
+            "currency", "rating", "review_count", "product_url", "image_url", "source_url",
+        ]
+        with output.open("w", newline="", encoding="utf-8-sig") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(rows)
         return output
 
     def close(self) -> None:
